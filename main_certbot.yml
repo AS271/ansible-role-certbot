@@ -1,0 +1,35 @@
+---
+# if previous certificate was issued using certbot, please delete it using 'sudo certbot delete' on the target server
+# be sure that the letsencrypt servers (acme-v02.api.letsencrypt.org) are accessible from the target server(s)
+# make sure there is a VirtualHost for each domain name on a single server in /etc/httpd/conf.d/apache-toolkit_web_gui-le-ssl.conf; also make sure the correct certificate and key file paths are specified for earch Virtual host
+# make␣sure␣there␣is␣a␣VirtualHost␣for␣each␣domain␣name␣on␣a␣single␣server␣in␣/etc/httpd/conf.d/apache-toolkit_web_gui.conf; also for each VirtualHost, redirect http to https as follows
+#    RewriteCond %{HTTPS} !=on
+#    RewriteRule ^/toolkit/ https://%{SERVER_NAME}/toolkit/ [R,L]
+
+# All the above can be added as tasks in this playbook.
+
+- name: Install or renew ssh certificates with letsencrypt CO
+  hosts: all
+  gather_facts: True
+  become: yes
+  vars:
+    certbot_admin_email: example@exmple.com #the email you want to use in the ssl cert creation process
+    certbot_create_if_missing: true
+    certbot_create_standalone_stop_services:
+      - httpd
+    certbot_certs:
+      - domains:
+        - "{{ inventory_hostname }}" #create an inventry file for your servers
+  tasks:
+#    - name: Install pexpect
+#      yum:
+#        name: pexpect
+#        state: latest
+#    - name: remove any existing certobt certs
+#      expect:
+#        command: certbot delete
+#        responses:
+#          (?i)Select the appropriate numbers separated by commas and/or spaces, or leave input blank to select all options shown (Enter 'c' to cancel): ""
+    - name: install new cert
+      include_role:
+        name: '../roles/ansible-role-certbot' #the file path for the role
